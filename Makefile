@@ -1,12 +1,12 @@
-all: nftest
+all: netfilter-test
 
-nftest: nftest.o main.o
-	g++ -o nftest nftest.o main.o -lnetfilter_queue
+netfilter-test: netfilter-test.o main.o
+	g++ -o netfilter-test netfilter-test.o main.o -lnetfilter_queue
 
-main.o: header.h nftest.h main.cpp 
+main.o: header.h netfilter-test.h main.cpp 
 
-nftest.o: header.h nftest.h nftest.cpp
+netfilter-test.o: header.h netfilter-test.h netfilter-test.cpp
 
 clean:
-	rm -f nftest
+	rm -f netfilter-test
 	rm -f *.o
