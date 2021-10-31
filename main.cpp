@@ -1,7 +1,13 @@
 #include "nftest.h"
 
-int main(int argc, char **argv)
-{
+extern const char *HOST;
+
+void usage() {
+    puts("syntax : netfilter-test <host>");
+    puts("sample : netfilter-test test.gilgil.net");
+}
+
+int main(int argc, char **argv) {
 	struct nfq_handle *h;
 	struct nfq_q_handle *qh;
 	struct nfnl_handle *nh;
@@ -9,6 +15,15 @@ int main(int argc, char **argv)
 	int rv;
 	char buf[4096] __attribute__ ((aligned));
 
+    if(argc != 2) {
+        usage();
+        return -1;
+    }
+    HOST = strdup(argv[1]);
+    if(!HOST) {
+        puts("Couldn't allocate memory for http host");
+        return -1;
+    }
 	printf("opening library handle\n");
 	h = nfq_open();
 	if (!h) {
@@ -45,7 +60,7 @@ int main(int argc, char **argv)
 
 	for (;;) {
 		if ((rv = recv(fd, buf, sizeof(buf), 0)) >= 0) {
-			printf("pkt received\n");
+			//printf("pkt received\n");
 			nfq_handle_packet(h, buf, rv);
 			continue;
 		}
@@ -76,6 +91,7 @@ int main(int argc, char **argv)
 
 	printf("closing library handle\n");
 	nfq_close(h);
-
+    free((void*)HOST);
+    HOST = NULL;
 	exit(0);
 }
