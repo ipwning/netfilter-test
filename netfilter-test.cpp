@@ -110,13 +110,17 @@ int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
                     if(!http) return -1;
                     memcpy(http, _data + (ip->h_len * 4 + tcp->flags.offset * 4), http_size);
                     host = (unsigned char *)strstr((char *)http, "Host: ") + 6;
-                    nl = (unsigned char *)strstr((char *)host, "\r\n");
-                    *nl = '\0';
-                    if(!strcmp((const char *)host, HOST)) {
-                        printf("%s is filtered!! :(\n", host);
-                        //dump(http, http_size);
-                        state = NF_DROP;
-                    } else printf("%s is safety host. :)\n", host);
+                    if(host) {
+                        nl = (unsigned char *)strstr((char *)host, "\r\n");
+                        if(nl) {
+                            *nl = '\0';
+                            if(!strcmp((const char *)host, HOST)) {
+                                printf("%s is filtered!! :(\n", host);
+                                //dump(http, http_size);
+                                state = NF_DROP;
+                            } else printf("%s is safety host. :)\n", host);
+                        }
+                    }
                 }
             }
         }
