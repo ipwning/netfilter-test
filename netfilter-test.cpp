@@ -5,13 +5,13 @@ const char *HOST;
 
 /* returns packet id */
 void dump(unsigned char* buf, int size) {
-	int i;
-	for (i = 0; i < size; i++) {
-		if (i != 0 && i % 16 == 0)
-			printf("\n");
-		printf("%02X ", buf[i]);
-	}
-	printf("\n");
+    int i;
+    for (i = 0; i < size; i++) {
+        if (i != 0 && i % 16 == 0)
+            printf("\n");
+        printf("%02X ", buf[i]);
+    }
+    printf("\n");
 }
 
 void ip_debug(ip_header *ip) {
@@ -57,9 +57,9 @@ void tcp_debug(tcp_header *tcp) {
 }
 
 int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
-	      struct nfq_data *nfa, void *data) {
+          struct nfq_data *nfa, void *data) {
     
-	struct nfqnl_msg_packet_hdr *ph = NULL;
+    struct nfqnl_msg_packet_hdr *ph = NULL;
     tcp_header *tcp = NULL;
     ip_header *ip = NULL;
     int ret;
@@ -70,12 +70,12 @@ int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     unsigned char *http = NULL;
     unsigned char *host = NULL;
     unsigned char *nl = NULL;
-	ph = nfq_get_msg_packet_hdr(nfa);
-	
+    ph = nfq_get_msg_packet_hdr(nfa);
+    
     if (ph) id = ntohl(ph->packet_id);
-	else return -1;
+    else return -1;
 
-	ret = nfq_get_payload(nfa, &_data);
+    ret = nfq_get_payload(nfa, &_data);
     ip = (ip_header*)malloc(sizeof(ip_header) + 1);
     if(!ip) return -1;
     
@@ -105,7 +105,7 @@ int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
                 //tcp_debug(tcp);
                 http_size = ip->total_len - (ip->h_len * 4 + tcp->flags.offset * 4);
                 if(http_size) { 
-	                puts("check the http host.");
+                    puts("check the http host.");
                     http = (unsigned char *)malloc(http_size + 1);
                     if(!http) return -1;
                     memcpy(http, _data + (ip->h_len * 4 + tcp->flags.offset * 4), http_size);
@@ -124,61 +124,61 @@ int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     free(ip);
     free(tcp);
     free(http);
-	return nfq_set_verdict(qh, id, state, 0, NULL);
+    return nfq_set_verdict(qh, id, state, 0, NULL);
 }
 
 uint32_t print_pkt(struct nfq_data *tb)
 {
-	int id = 0;
-	struct nfqnl_msg_packet_hdr *ph;
-	struct nfqnl_msg_packet_hw *hwph;
-	uint32_t mark,ifi;
-	int ret;
-	unsigned char *data;
+    int id = 0;
+    struct nfqnl_msg_packet_hdr *ph;
+    struct nfqnl_msg_packet_hw *hwph;
+    uint32_t mark,ifi;
+    int ret;
+    unsigned char *data;
 
-	ph = nfq_get_msg_packet_hdr(tb);
-	if (ph) {
-		id = ntohl(ph->packet_id);
-		printf("hw_protocol=0x%04x hook=%u id=%u ",
-			ntohs(ph->hw_protocol), ph->hook, id);
-	}
+    ph = nfq_get_msg_packet_hdr(tb);
+    if (ph) {
+        id = ntohl(ph->packet_id);
+        printf("hw_protocol=0x%04x hook=%u id=%u ",
+            ntohs(ph->hw_protocol), ph->hook, id);
+    }
 
-	hwph = nfq_get_packet_hw(tb);
-	if (hwph) {
-		int i, hlen = ntohs(hwph->hw_addrlen);
+    hwph = nfq_get_packet_hw(tb);
+    if (hwph) {
+        int i, hlen = ntohs(hwph->hw_addrlen);
 
-		printf("hw_src_addr=");
-		for (i = 0; i < hlen-1; i++)
-			printf("%02x:", hwph->hw_addr[i]);
-		printf("%02x ", hwph->hw_addr[hlen-1]);
-	}
+        printf("hw_src_addr=");
+        for (i = 0; i < hlen-1; i++)
+            printf("%02x:", hwph->hw_addr[i]);
+        printf("%02x ", hwph->hw_addr[hlen-1]);
+    }
 
-	mark = nfq_get_nfmark(tb);
-	if (mark)
-		printf("mark=%u ", mark);
+    mark = nfq_get_nfmark(tb);
+    if (mark)
+        printf("mark=%u ", mark);
 
-	ifi = nfq_get_indev(tb);
-	if (ifi)
-		printf("indev=%u ", ifi);
+    ifi = nfq_get_indev(tb);
+    if (ifi)
+        printf("indev=%u ", ifi);
 
-	ifi = nfq_get_outdev(tb);
-	if (ifi)
-		printf("outdev=%u ", ifi);
-	ifi = nfq_get_physindev(tb);
-	if (ifi)
-		printf("physindev=%u ", ifi);
+    ifi = nfq_get_outdev(tb);
+    if (ifi)
+        printf("outdev=%u ", ifi);
+    ifi = nfq_get_physindev(tb);
+    if (ifi)
+        printf("physindev=%u ", ifi);
 
-	ifi = nfq_get_physoutdev(tb);
-	if (ifi)
-		printf("physoutdev=%u ", ifi);
+    ifi = nfq_get_physoutdev(tb);
+    if (ifi)
+        printf("physoutdev=%u ", ifi);
 
-	ret = nfq_get_payload(tb, &data);
-	if (ret >= 0) {
-		printf("payload_len=%d\n", ret);
-		dump(data, ret);
-	}
-	
-	fputc('\n', stdout);
+    ret = nfq_get_payload(tb, &data);
+    if (ret >= 0) {
+        printf("payload_len=%d\n", ret);
+        dump(data, ret);
+    }
+    
+    fputc('\n', stdout);
 
-	return id;
+    return id;
 }
